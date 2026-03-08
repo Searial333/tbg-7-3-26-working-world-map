@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jungle Gem Platformer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.21.0"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Krub:wght@400;700&family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Krub', sans-serif;
+  }
+  @keyframes heart-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.4); filter: brightness(1.5); }
+  }
+  .animate-heart-pulse {
+    animation: heart-pulse 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  }
+  @keyframes full-health-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(0,255,200,.3); }
+    50% { transform: scale(1.05); box-shadow: 0 0 12px rgba(0,255,200,.6); }
+  }
+  .animate-full-health-pulse {
+    animation: full-health-pulse 2s infinite ease-in-out;
+  }
+  @keyframes heart-damage {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.2) rotate(-10deg); }
+    50% { transform: scale(0.9) rotate(10deg); }
+    75% { transform: scale(1.1) rotate(-5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  .animate-heart-damage {
+      animation: heart-damage 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+
+  @keyframes fade-to-black-and-back {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+  .animate-fade-to-black-and-back {
+    animation: fade-to-black-and-back 1.5s ease-in-out;
+  }
+
+  .ui-panel {
+    background-color: #8c5a2b;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='wood' x1='0' x2='0' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%238c5a2b'/%3E%3Cstop offset='100%25' stop-color='%23593a1a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23wood)'/%3E%3Cline x1='0' y1='10' x2='100' y2='5' stroke-width='2' stroke='%23593a1a' stroke-opacity='0.5'/%3E%3Cline x1='0' y1='30' x2='100' y2='38' stroke-width='3' stroke='%23593a1a' stroke-opacity='0.5'/%3E%3Cline x1='0' y1='60' x2='100' y2='55' stroke-width='2' stroke='%23593a1a' stroke-opacity='0.5'/%3E%3Cline x1='0' y1='95' x2='100' y2='90' stroke-width='3' stroke='%23593a1a' stroke-opacity='0.5'/%3E%3C/svg%3E");
+    background-size: 200px;
+    border: 8px solid transparent;
+    border-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 8C0 3.58172 3.58172 0 8 0H16C20.4183 0 24 3.58172 24 8V16C24 20.4183 20.4183 24 16 24H8C3.58172 24 0 20.4183 0 16V8Z' fill='%23a26b3a'/%3E%3Cpath d='M3 8C3 5.23858 5.23858 3 8 3H16C18.7614 3 21 5.23858 21 8V16C21 18.7614 18.7614 21 16 21H8C5.23858 21 3 18.7614 3 16V8Z' fill='%23c9955d'/%3E%3Cpath d='M6 8C6 6.89543 6.89543 6 8 6H16C17.1046 6 18 6.89543 18 8V16C18 17.1046 17.1046 18 16 18H8C6.89543 18 6 17.1046 6 16V8Z' fill='%23824f21'/%3E%3C/svg%3E") 8 stretch;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.4);
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+  }
+  .ui-button {
+    background: linear-gradient(to bottom, #a26b3a, #824f21);
+    border: 2px solid #c9955d;
+    border-top-color: #e6c58d;
+    border-left-color: #e6c58d;
+    border-bottom-color: #5c3716;
+    border-right-color: #5c3716;
+    color: white;
+    text-shadow: 1px 1px 2px #5c3716;
+    font-weight: bold;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 0 #5c3716, 0 5px 5px rgba(0,0,0,0.4);
+    transition: all 0.1s ease-out;
+    cursor: pointer;
+  }
+  .ui-button:hover:not(:disabled) {
+    background: linear-gradient(to bottom, #b98150, #966132);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #5c3716, 0 7px 7px rgba(0,0,0,0.4);
+  }
+  .ui-button:active:not(:disabled) {
+    background: linear-gradient(to top, #a26b3a, #824f21);
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #5c3716, 0 3px 3px rgba(0,0,0,0.4);
+  }
+  .ui-button:disabled {
+    background: #6b7280;
+    border-color: #4b5563;
+    color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: 0 4px 0 #374151;
+    text-shadow: none;
+  }
+  .ui-title {
+    font-family: 'Luckiest Guy', cursive;
+    font-size: 3rem; /* 48px */
+    font-weight: normal;
+    color: #fef3c7; /* yellow-100 */
+    letter-spacing: 0.1em;
+    text-shadow: 3px 3px 0px #824f21, 5px 5px 10px rgba(0,0,0,0.7);
+  }
+
+  /* Styles for the new toggle switch in settings */
+  .toggle-checkbox:checked {
+      right: 0;
+      border-color: #a26b3a;
+  }
+  .toggle-checkbox:checked + .toggle-label {
+      background-color: #a26b3a;
+  }
+</style>
+</head>
+  <body class="bg-gray-900 text-gray-200">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
